@@ -214,9 +214,10 @@ public class HomeController {
 	// return new ModelAndView("home", "message", message);
 	// }
 
-	@RequestMapping(value = "/properties", method = RequestMethod.GET)
+	@RequestMapping(value = "/properties", method = RequestMethod.POST)
 	@ResponseBody
-	public GB_PropertiesResult getProperties(HttpServletRequest req) {
+	public GB_PropertiesResult getProperties(
+			@RequestParam HashMap<String, Object> params, HttpServletRequest req) {
 		GB_PropertiesResult pr_result = new GB_PropertiesResult();
 		HttpSession session = req.getSession(false);
 		if (session == null) {
@@ -224,9 +225,22 @@ public class HomeController {
 			pr_result.setResult_msg("session null");
 			return pr_result;
 		}
+		
+		String[] mAttribute = {};
+		String[] subAttribute = { "email_id" };
+		String chkResult = errorCheckInParams(params, mAttribute, subAttribute);
+		if (chkResult != null) {
+			pr_result.setResult("fail");
+			pr_result.setResult_msg(chkResult);
+			return pr_result;
+		}
 
 		GB_Properties p = new GB_Properties();
-		p.setEMAIL_ID((String) session.getAttribute("user_id"));
+		if (params.containsKey("email_id")) {
+			p.setEMAIL_ID((String) params.get("email_id"));
+		} else {
+			p.setEMAIL_ID((String) session.getAttribute("user_id"));
+		}
 
 		List<GB_Properties> getPropertiesResult = userDaoImpl.getProperties(p);
 
